@@ -131,7 +131,8 @@ func SetupRoutes(r *gin.Engine) {
     demons := auth.Group("/demons")
     demons.Use(middleware.RequireDemon()) // ← Middleware de rol específico
     {
-        demons.POST("/victims", controllers.RegisterVictim)
+        demons.GET("/available-network-admins", controllers.GetAvailableNetworkAdmins)
+        demons.POST("/victims", controllers.AssignVictim)
         demons.POST("/reports", controllers.CreateReport)
         demons.GET("/stats", controllers.GetMyStats)
         demons.GET("/victims", controllers.GetMyVictims)
@@ -162,6 +163,7 @@ func SetupRoutes(r *gin.Engine) {
 | `GET /admin/stats` | ❌ | ✅ | ❌ | ❌ |
 | `POST /admin/rewards` | ❌ | ✅ | ❌ | ❌ |
 | `DELETE /admin/users/:id` | ❌ | ✅ | ❌ | ❌ |
+| `GET /demons/available-network-admins` | ❌ | ❌ | ✅ | ❌ |
 | `POST /demons/victims` | ❌ | ❌ | ✅ | ❌ |
 | `GET /demons/stats` | ❌ | ❌ | ✅ | ❌ |
 | `POST /demons/reports` | ❌ | ❌ | ✅ | ❌ |
@@ -182,14 +184,16 @@ func SetupRoutes(r *gin.Engine) {
 
 #### 👹 **Demon (Ejecutor)**
 ```
-✅ Registro de nuevas víctimas
-✅ Creación y gestión de reportes
+✅ Visualización de Network Admins disponibles
+✅ Asignación de víctimas existentes (no creación)
+✅ Creación y gestión de reportes sobre víctimas propias
 ✅ Visualización de víctimas propias
 ✅ Estadísticas personales
 ✅ Creación de posts identificados
 ✅ Actualización de estado de reportes propios
 ❌ Acceso a datos de otros demonios
 ❌ Funciones administrativas
+❌ Crear nuevos Network Admins
 ```
 
 #### 👨‍💻 **Network Admin (Víctima)**
@@ -287,14 +291,22 @@ func UpdateReportStatus(c *gin.Context) {
 }
 ```
 
-### Validación de Víctimas
-**Archivo:** `controllers/demon.go:26-30`
+### Validación de Asignación de Víctimas
+**Archivo:** `controllers/demon.go:38-49`
 
 ```go
-func RegisterVictim(c *gin.Context) {
-    // Solo puede registrar víctimas con rol network_admin
-    if input.Role != models.RoleNetworkAdmin {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "Only network_admin role can be registered as victim"})
+func AssignVictim(c *gin.Context) {
+    // Verificar que la víctima existe y es network admin
+    var victim models.User
+    if err := config.DB.Where("id = ? AND role = ?", input.VictimID, models.RoleNetworkAdmin).First(&victim).Error; err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Network admin not found"})
+        return
+    }
+
+    // Verificar que no sea ya víctima de este demonio
+    var existingRelation models.DemonVictim
+    if err := config.DB.Where("demon_id = ? AND victim_id = ?", user.ID, input.VictimID).First(&existingRelation).Error; err == nil {
+        c.JSON(http.StatusConflict, gin.H{"error": "This network admin is already your victim"})
         return
     }
     // ...

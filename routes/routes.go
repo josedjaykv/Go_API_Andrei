@@ -37,7 +37,8 @@ func SetupRoutes(r *gin.Engine) {
 	demons := auth.Group("/demons")
 	demons.Use(middleware.RequireDemon())
 	{
-		demons.POST("/victims", controllers.RegisterVictim)
+		demons.GET("/available-network-admins", controllers.GetAvailableNetworkAdmins)
+		demons.POST("/victims", controllers.AssignVictim)
 		demons.POST("/reports", controllers.CreateReport)
 		demons.GET("/stats", controllers.GetMyStats)
 		demons.GET("/victims", controllers.GetMyVictims)

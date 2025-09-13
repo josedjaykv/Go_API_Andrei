@@ -10,44 +10,62 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func RegisterVictim(c *gin.Context) {
-	var input models.UserRegistration
+func GetAvailableNetworkAdmins(c *gin.Context) {
+	user := c.MustGet("user").(models.User)
+
+	// Obtener todos los network admins que no son víctimas de este demonio
+	var networkAdmins []models.User
+	if err := config.DB.Where("role = ? AND id NOT IN (SELECT victim_id FROM demon_victims WHERE demon_id = ?)", 
+		models.RoleNetworkAdmin, user.ID).Find(&networkAdmins).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch available network admins"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"available_network_admins": networkAdmins})
+}
+
+func AssignVictim(c *gin.Context) {
+	var input models.AssignVictimRequest
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if input.Role != models.RoleNetworkAdmin {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Only network_admin role can be registered as victim"})
+	user := c.MustGet("user").(models.User)
+
+	// Verificar que la víctima existe y es network admin
+	var victim models.User
+	if err := config.DB.Where("id = ? AND role = ?", input.VictimID, models.RoleNetworkAdmin).First(&victim).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Network admin not found"})
 		return
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+	// Verificar que no sea ya víctima de este demonio
+	var existingRelation models.DemonVictim
+	if err := config.DB.Where("demon_id = ? AND victim_id = ?", user.ID, input.VictimID).First(&existingRelation).Error; err == nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "This network admin is already your victim"})
 		return
 	}
 
-	user := models.User{
-		Username: input.Username,
-		Email:    input.Email,
-		Password: string(hashedPassword),
-		Role:     input.Role,
+	// Crear la relación demonio-víctima
+	demonVictim := models.DemonVictim{
+		DemonID:  user.ID,
+		VictimID: input.VictimID,
 	}
 
-	if err := config.DB.Create(&user).Error; err != nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "Username or email already exists"})
+	if err := config.DB.Create(&demonVictim).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to assign victim"})
 		return
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"message": "Victim registered successfully",
+		"message": "Victim assigned successfully",
 		"victim": gin.H{
-			"id":       user.ID,
-			"username": user.Username,
-			"email":    user.Email,
-			"role":     user.Role,
+			"id":       victim.ID,
+			"username": victim.Username,
+			"email":    victim.Email,
+			"role":     victim.Role,
 		},
 	})
 }
@@ -105,11 +123,16 @@ func GetMyStats(c *gin.Context) {
 func GetMyVictims(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
 
-	var victims []models.User
-	if err := config.DB.Where("role = ? AND id IN (SELECT victim_id FROM reports WHERE demon_id = ?)", 
-		models.RoleNetworkAdmin, user.ID).Find(&victims).Error; err != nil {
+	var demonVictims []models.DemonVictim
+	if err := config.DB.Where("demon_id = ?", user.ID).Preload("Victim").Find(&demonVictims).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch victims"})
 		return
+	}
+
+	// Extraer solo la información de las víctimas
+	var victims []models.User
+	for _, dv := range demonVictims {
+		victims = append(victims, dv.Victim)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"victims": victims})

@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Andrei Mes Manur API - Frontend Simple</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e1e2e, #2d3748);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            border: 1px solid #4a5568;
+        }
+
+        .header h1 {
+            color: #f56565;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .auth-section {
+            background: rgba(0,0,0,0.2);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid #4a5568;
+        }
+
+        .auth-section h2 {
+            color: #fbb6ce;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f56565;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #cbd5e0;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #4a5568;
+            border-radius: 5px;
+            background: #2d3748;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #f56565;
+            box-shadow: 0 0 0 2px rgba(245, 101, 101, 0.2);
+        }
+
+        .btn {
+            background: #f56565;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: #e53e3e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 101, 101, 0.3);
+        }
+
+        .btn-secondary {
+            background: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #2d3748;
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            background: #4a5568;
+            color: #e2e8f0;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: #f56565;
+        }
+
+        .tab-content {
+            background: rgba(0,0,0,0.2);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #4a5568;
+        }
+
+        .response-area {
+            background: #1a202c;
+            border: 1px solid #4a5568;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .user-info {
+            background: #2d3748;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #f56565;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .endpoint-section {
+            margin-bottom: 30px;
+        }
+
+        .endpoint-section h3 {
+            color: #fbb6ce;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #4a5568;
+            padding-bottom: 5px;
+        }
+
+        .credentials {
+            background: #2d3748;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 12px;
+        }
+
+        .credentials h4 {
+            color: #fbb6ce;
+            margin-bottom: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .alert {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .alert-success {
+            background: rgba(72, 187, 120, 0.2);
+            border: 1px solid #48bb78;
+            color: #68d391;
+        }
+
+        .alert-error {
+            background: rgba(245, 101, 101, 0.2);
+            border: 1px solid #f56565;
+            color: #fc8181;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👑 Andrei Mes Manur API</h1>
+            <p>Frontend Simple para Interacción con la API</p>
+        </div>
+
+        <!-- Sección de Autenticación -->
+        <div class="auth-section">
+            <h2>🔐 Autenticación</h2>
+            
+            <div class="user-info" id="userInfo" style="display: none;">
+                <h4>Usuario Autenticado:</h4>
+                <p id="userDetails"></p>
+                <button class="btn btn-secondary" onclick="logout()">Cerrar Sesión</button>
+            </div>
+
+            <div id="authForms">
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('login')">Iniciar Sesión</button>
+                    <button class="tab" onclick="showTab('register')">Registrarse</button>
+                </div>
+
+                <div id="loginTab" class="tab-content">
+                    <form onsubmit="login(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Email:</label>
+                                <input type="email" id="loginEmail" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Password:</label>
+                                <input type="password" id="loginPassword" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">Iniciar Sesión</button>
+                    </form>
+
+                    <div class="credentials">
+                        <h4>Cuentas de Prueba:</h4>
+                        <p>🔮 <strong>Andrei:</strong> andrei@evil.com / password123</p>
+                        <p>👹 <strong>Demon:</strong> shadow@evil.com / password123</p>
+                        <p>👨‍💻 <strong>Network Admin:</strong> john.admin@company.com / password123</p>
+                    </div>
+                </div>
+
+                <div id="registerTab" class="tab-content hidden">
+                    <form onsubmit="register(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Username:</label>
+                                <input type="text" id="regUsername" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email:</label>
+                                <input type="email" id="regEmail" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Password:</label>
+                                <input type="password" id="regPassword" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Rol:</label>
+                                <select id="regRole" required>
+                                    <option value="demon">👹 Demon</option>
+                                    <option value="network_admin">👨‍💻 Network Admin</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn">Registrarse</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="response-area" id="authResponse"></div>
+        </div>
+
+        <!-- Sección de Endpoints -->
+        <div id="endpointsSection" class="hidden">
+            <div class="tabs">
+                <button class="tab active" onclick="showEndpointTab('public')">Públicos</button>
+                <button class="tab" onclick="showEndpointTab('andrei')">Andrei</button>
+                <button class="tab" onclick="showEndpointTab('demon')">Demon</button>
+                <button class="tab" onclick="showEndpointTab('networkadmin')">Network Admin</button>
+            </div>
+
+            <!-- Endpoints Públicos -->
+            <div id="publicTab" class="tab-content">
+                <div class="endpoint-section">
+                    <h3>📢 Página de Resistencia</h3>
+                    <button class="btn" onclick="getResistancePage()">Ver Página de Resistencia</button>
+                </div>
+                <div class="response-area" id="publicResponse"></div>
+            </div>
+
+            <!-- Endpoints de Andrei -->
+            <div id="andreiTab" class="tab-content hidden">
+                <div class="grid">
+                    <div class="endpoint-section">
+                        <h3>👥 Gestión de Usuarios</h3>
+                        <button class="btn" onclick="getAllUsers()">Ver Todos los Usuarios</button>
+                        <div class="form-group">
+                            <label>ID de Usuario:</label>
+                            <input type="number" id="userIdInput" placeholder="ID del usuario">
+                        </div>
+                        <button class="btn" onclick="getUserById()">Ver Usuario por ID</button>
+                        <button class="btn btn-secondary" onclick="deleteUser()">Eliminar Usuario</button>
+                    </div>
+
+                    <div class="endpoint-section">
+                        <h3>📊 Estadísticas y Rankings</h3>
+                        <button class="btn" onclick="getPlatformStats()">Estadísticas de la Plataforma</button>
+                        <button class="btn" onclick="getDemonRanking()">Ranking de Demonios</button>
+                    </div>
+
+                    <div class="endpoint-section">
+                        <h3>📝 Gestión de Posts</h3>
+                        <button class="btn" onclick="getAllPosts()">Ver Todos los Posts</button>
+                        <div class="form-group">
+                            <label>ID del Post:</label>
+                            <input type="number" id="postIdInput" placeholder="ID del post">
+                        </div>
+                        <button class="btn btn-secondary" onclick="deletePost()">Eliminar Post</button>
+                    </div>
+
+                    <div class="endpoint-section">
+                        <h3>🎁 Crear Recompensa/Castigo</h3>
+                        <form onsubmit="createReward(event)">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>ID del Demonio:</label>
+                                    <input type="number" id="rewardDemonId" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Tipo:</label>
+                                    <select id="rewardType" required>
+                                        <option value="reward">🎁 Recompensa</option>
+                                        <option value="punishment">💀 Castigo</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Título:</label>
+                                    <input type="text" id="rewardTitle" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Puntos:</label>
+                                    <input type="number" id="rewardPoints" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Descripción:</label>
+                                <input type="text" id="rewardDescription" required>
+                            </div>
+                            <button type="submit" class="btn">Crear Recompensa/Castigo</button>
+                        </form>
+                    </div>
+
+                    <div class="endpoint-section">
+                        <h3>✍️ Crear Post de Andrei</h3>
+                        <form onsubmit="createAndreiPost(event)">
+                            <div class="form-group">
+                                <label>Título:</label>
+                                <input type="text" id="andreiPostTitle" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Contenido:</label>
+                                <textarea id="andreiPostBody" rows="4" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Media URL (opcional):</label>
+                                <input type="url" id="andreiPostMedia">
+                            </div>
+                            <button type="submit" class="btn">Crear Post</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="response-area" id="andreiResponse"></div>
+            </div>
+
+            <!-- Endpoints de Demon -->
+            <div id="demonTab" class="tab-content hidden">
+                <div class="grid">
+                    <div class="endpoint-section">
+                        <h3>🎯 Gestión de Víctimas</h3>
+                        <button class="btn" onclick="getAvailableNetworkAdmins()">Ver Network Admins Disponibles</button>
+                        <button class="btn" onclick="getMyVictims()">Ver Mis Víctimas</button>
+                        
+                        <form onsubmit="assignVictim(event)">
+                            <div class="form-group">
+                                <label>Seleccionar Network Admin:</label>
+                                <select id="availableNetworkAdmins" required>
+                                    <option value="">Cargando...</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn">Asignar como Víctima</button>
+                        </form>
+                        
+                        <button class="btn btn-secondary" onclick="refreshAvailableNetworkAdmins()">Refrescar Lista</button>
+                    </div>
+
+                    <div class="endpoint-section">
+                        <h3>📋 Reportes</h3>
+                        <button class="btn" onclick="getMyReports()">Ver Mis Reportes</button>
+                        
+                        <form onsubmit="createReport(event)">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Seleccionar Víctima:</label>
+                                    <select id="reportVictimSelect" required>
+                                        <option value="">Selecciona una víctima</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Título:</label>
+                                    <input type="text" id="reportTitle" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Descripción:</label>
+                                <textarea id="reportDescription" rows="3" required></textarea>
+                            </div>
+                            <button type="submit" class="btn">Crear Reporte</button>
+                        </form>
+
+                        <div style="margin-top: 15px;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>ID del Reporte:</label>
+                                    <input type="number" id="updateReportId">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nuevo Estado:</label>
+                                    <select id="updateReportStatus">
+                                        <option value="pending">Pendiente</option>
+                                        <option value="reviewed">Revisado</option>
+                                        <option value="resolved">Resuelto</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="btn" onclick="updateReportStatus()">Actualizar Estado</button>
+                        </div>
+                    </div>
+
+                    <div class="endpoint-section">
+                        <h3>📊 Estadísticas</h3>
+                        <button class="btn" onclick="getDemonStats()">Ver Mis Estadísticas</button>
+                    </div>
+
+                    <div class="endpoint-section">
+                        <h3>📝 Posts de Demonio</h3>
+                        <form onsubmit="createDemonPost(event)">
+                            <div class="form-group">
+                                <label>Título:</label>
+                                <input type="text" id="demonPostTitle" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Contenido:</label>
+                                <textarea id="demonPostBody" rows="4" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Media URL (opcional):</label>
+                                <input type="url" id="demonPostMedia">
+                            </div>
+                            <button type="submit" class="btn">Crear Post</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="response-area" id="demonResponse"></div>
+            </div>
+
+            <!-- Endpoints de Network Admin -->
+            <div id="networkadminTab" class="tab-content hidden">
+                <div class="endpoint-section">
+                    <h3>✍️ Crear Post Anónimo</h3>
+                    <form onsubmit="createAnonymousPost(event)">
+                        <div class="form-group">
+                            <label>Título:</label>
+                            <input type="text" id="anonPostTitle" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Contenido:</label>
+                            <textarea id="anonPostBody" rows="4" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Media URL (opcional):</label>
+                            <input type="url" id="anonPostMedia">
+                        </div>
+                        <button type="submit" class="btn">Crear Post Anónimo</button>
+                    </form>
+                </div>
+                <div class="response-area" id="networkadminResponse"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = '';
+        let currentUser = null;
+        const API_BASE = 'http://localhost:8080/api/v1';
+
+        // Funciones de utilidad
+        function showResponse(elementId, data) {
+            const element = document.getElementById(elementId);
+            if (typeof data === 'object') {
+                element.textContent = JSON.stringify(data, null, 2);
+            } else {
+                element.textContent = data;
+            }
+        }
+
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            document.body.appendChild(alertDiv);
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+
+        async function apiCall(method, endpoint, data = null) {
+            try {
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                if (authToken) {
+                    headers['Authorization'] = `Bearer ${authToken}`;
+                }
+
+                const options = {
+                    method,
+                    headers
+                };
+
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error || 'Error en la respuesta');
+                }
+                
+                return result;
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        // Funciones de UI
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.add('hidden'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
+        }
+
+        function showEndpointTab(tabName) {
+            const tabs = document.querySelectorAll('#endpointsSection .tab');
+            const contents = document.querySelectorAll('#endpointsSection .tab-content');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.add('hidden'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
+
+            // Auto-cargar datos específicos de cada pestaña
+            if (tabName === 'demon' && currentUser && currentUser.role === 'demon') {
+                getAvailableNetworkAdmins();
+                getMyVictims();
+            }
+        }
+
+        function updateUserInfo() {
+            if (currentUser) {
+                document.getElementById('userInfo').style.display = 'block';
+                document.getElementById('authForms').style.display = 'none';
+                document.getElementById('endpointsSection').classList.remove('hidden');
+                document.getElementById('userDetails').innerHTML = `
+                    <strong>${currentUser.username}</strong> (${currentUser.email}) - Rol: ${currentUser.role}
+                `;
+            } else {
+                document.getElementById('userInfo').style.display = 'none';
+                document.getElementById('authForms').style.display = 'block';
+                document.getElementById('endpointsSection').classList.add('hidden');
+            }
+        }
+
+        // Funciones de autenticación
+        async function login(event) {
+            event.preventDefault();
+            try {
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                
+                const result = await apiCall('POST', '/login', { email, password });
+                
+                authToken = result.token;
+                currentUser = result.user;
+                updateUserInfo();
+                showResponse('authResponse', result);
+                showAlert('Login exitoso', 'success');
+            } catch (error) {
+                showResponse('authResponse', { error: error.message });
+                showAlert('Error en login: ' + error.message, 'error');
+            }
+        }
+
+        async function register(event) {
+            event.preventDefault();
+            try {
+                const data = {
+                    username: document.getElementById('regUsername').value,
+                    email: document.getElementById('regEmail').value,
+                    password: document.getElementById('regPassword').value,
+                    role: document.getElementById('regRole').value
+                };
+                
+                const result = await apiCall('POST', '/register', data);
+                showResponse('authResponse', result);
+                showAlert('Registro exitoso', 'success');
+            } catch (error) {
+                showResponse('authResponse', { error: error.message });
+                showAlert('Error en registro: ' + error.message, 'error');
+            }
+        }
+
+        function logout() {
+            authToken = '';
+            currentUser = null;
+            updateUserInfo();
+            showAlert('Sesión cerrada', 'success');
+        }
+
+        // Endpoints públicos
+        async function getResistancePage() {
+            try {
+                const result = await apiCall('GET', '/resistance');
+                showResponse('publicResponse', result);
+            } catch (error) {
+                showResponse('publicResponse', { error: error.message });
+            }
+        }
+
+        // Endpoints de Andrei
+        async function getAllUsers() {
+            try {
+                const result = await apiCall('GET', '/admin/users');
+                showResponse('andreiResponse', result);
+            } catch (error) {
+                showResponse('andreiResponse', { error: error.message });
+            }
+        }
+
+        async function getUserById() {
+            try {
+                const id = document.getElementById('userIdInput').value;
+                if (!id) throw new Error('ID de usuario requerido');
+                const result = await apiCall('GET', `/admin/users/${id}`);
+                showResponse('andreiResponse', result);
+            } catch (error) {
+                showResponse('andreiResponse', { error: error.message });
+            }
+        }
+
+        async function deleteUser() {
+            try {
+                const id = document.getElementById('userIdInput').value;
+                if (!id) throw new Error('ID de usuario requerido');
+                if (!confirm('¿Estás seguro de eliminar este usuario?')) return;
+                const result = await apiCall('DELETE', `/admin/users/${id}`);
+                showResponse('andreiResponse', result);
+                showAlert('Usuario eliminado', 'success');
+            } catch (error) {
+                showResponse('andreiResponse', { error: error.message });
+            }
+        }
+
+        async function getPlatformStats() {
+            try {
+                const result = await apiCall('GET', '/admin/stats');
+                showResponse('andreiResponse', result);
+            } catch (error) {
+                showResponse('andreiResponse', { error: error.message });
+            }
+        }
+
+        async function getDemonRanking() {
+            try {
+                const result = await apiCall('GET', '/admin/demons/ranking');
+                showResponse('andreiResponse', result);
+            } catch (error) {
+                showResponse('andreiResponse', { error: error.message });
+            }
+        }
+
+        async function getAllPosts() {
+            try {
+                const result = await apiCall('GET', '/admin/posts');
+                showResponse('andreiResponse', result);
+            } catch (error) {
+                showResponse('andreiResponse', { error: error.message });
+            }
+        }
+
+        async function deletePost() {
+            try {
+                const id = document.getElementById('postIdInput').value;
+                if (!id) throw new Error('ID de post requerido');
+                if (!confirm('¿Estás seguro de eliminar este post?')) return;
+                const result = await apiCall('DELETE', `/admin/posts/${id}`);
+                showResponse('andreiResponse', result);
+                showAlert('Post eliminado', 'success');
+            } catch (error) {
+                showResponse('andreiResponse', { error: error.message });
+            }
+        }
+
+        async function createReward(event) {
+            event.preventDefault();
+            try {
+                const data = {
+                    demon_id: parseInt(document.getElementById('rewardDemonId').value),
+                    type: document.getElementById('rewardType').value,
+                    title: document.getElementById('rewardTitle').value,
+                    points: parseInt(document.getElementById('rewardPoints').value),
+                    description: document.getElementById('rewardDescription').value
+                };
+                const result = await apiCall('POST', '/admin/rewards', data);
+                showResponse('andreiResponse', result);
+                showAlert('Recompensa/Castigo creado', 'success');
+                event.target.reset();
+            } catch (error) {
+                showResponse('andreiResponse', { error: error.message });
+            }
+        }
+
+        async function createAndreiPost(event) {
+            event.preventDefault();
+            try {
+                const data = {
+                    title: document.getElementById('andreiPostTitle').value,
+                    body: document.getElementById('andreiPostBody').value,
+                    media: document.getElementById('andreiPostMedia').value || undefined
+                };
+                const result = await apiCall('POST', '/admin/posts', data);
+                showResponse('andreiResponse', result);
+                showAlert('Post creado', 'success');
+                event.target.reset();
+            } catch (error) {
+                showResponse('andreiResponse', { error: error.message });
+            }
+        }
+
+        // Endpoints de Demon
+        async function getAvailableNetworkAdmins() {
+            try {
+                const result = await apiCall('GET', '/demons/available-network-admins');
+                showResponse('demonResponse', result);
+                populateNetworkAdminsList(result.available_network_admins);
+            } catch (error) {
+                showResponse('demonResponse', { error: error.message });
+            }
+        }
+
+        function populateNetworkAdminsList(networkAdmins) {
+            const select = document.getElementById('availableNetworkAdmins');
+            select.innerHTML = '<option value="">Selecciona un Network Admin</option>';
+            
+            if (networkAdmins && networkAdmins.length > 0) {
+                networkAdmins.forEach(admin => {
+                    const option = document.createElement('option');
+                    option.value = admin.id;
+                    option.textContent = `${admin.username} (${admin.email})`;
+                    select.appendChild(option);
+                });
+            } else {
+                select.innerHTML = '<option value="">No hay Network Admins disponibles</option>';
+            }
+        }
+
+        async function refreshAvailableNetworkAdmins() {
+            await getAvailableNetworkAdmins();
+        }
+
+        async function getMyVictims() {
+            try {
+                const result = await apiCall('GET', '/demons/victims');
+                showResponse('demonResponse', result);
+                populateVictimsList(result.victims);
+            } catch (error) {
+                showResponse('demonResponse', { error: error.message });
+            }
+        }
+
+        function populateVictimsList(victims) {
+            const select = document.getElementById('reportVictimSelect');
+            select.innerHTML = '<option value="">Selecciona una víctima</option>';
+            
+            if (victims && victims.length > 0) {
+                victims.forEach(victim => {
+                    const option = document.createElement('option');
+                    option.value = victim.id;
+                    option.textContent = `${victim.username} (${victim.email})`;
+                    select.appendChild(option);
+                });
+            } else {
+                select.innerHTML = '<option value="">No tienes víctimas asignadas</option>';
+            }
+        }
+
+        async function assignVictim(event) {
+            event.preventDefault();
+            try {
+                const victimId = document.getElementById('availableNetworkAdmins').value;
+                if (!victimId) {
+                    throw new Error('Debe seleccionar un Network Admin');
+                }
+
+                const data = {
+                    victim_id: parseInt(victimId)
+                };
+                const result = await apiCall('POST', '/demons/victims', data);
+                showResponse('demonResponse', result);
+                showAlert('Víctima asignada exitosamente', 'success');
+                
+                // Refrescar las listas
+                await refreshAvailableNetworkAdmins();
+                await getMyVictims();
+            } catch (error) {
+                showResponse('demonResponse', { error: error.message });
+                showAlert('Error al asignar víctima: ' + error.message, 'error');
+            }
+        }
+
+        async function getMyReports() {
+            try {
+                const result = await apiCall('GET', '/demons/reports');
+                showResponse('demonResponse', result);
+            } catch (error) {
+                showResponse('demonResponse', { error: error.message });
+            }
+        }
+
+        async function createReport(event) {
+            event.preventDefault();
+            try {
+                const victimId = document.getElementById('reportVictimSelect').value;
+                if (!victimId) {
+                    throw new Error('Debe seleccionar una víctima');
+                }
+
+                const data = {
+                    victim_id: parseInt(victimId),
+                    title: document.getElementById('reportTitle').value,
+                    description: document.getElementById('reportDescription').value
+                };
+                const result = await apiCall('POST', '/demons/reports', data);
+                showResponse('demonResponse', result);
+                showAlert('Reporte creado exitosamente', 'success');
+                event.target.reset();
+            } catch (error) {
+                showResponse('demonResponse', { error: error.message });
+                showAlert('Error al crear reporte: ' + error.message, 'error');
+            }
+        }
+
+        async function updateReportStatus() {
+            try {
+                const id = document.getElementById('updateReportId').value;
+                const status = document.getElementById('updateReportStatus').value;
+                if (!id) throw new Error('ID de reporte requerido');
+                
+                const result = await apiCall('PUT', `/demons/reports/${id}`, { status });
+                showResponse('demonResponse', result);
+                showAlert('Estado de reporte actualizado', 'success');
+            } catch (error) {
+                showResponse('demonResponse', { error: error.message });
+            }
+        }
+
+        async function getDemonStats() {
+            try {
+                const result = await apiCall('GET', '/demons/stats');
+                showResponse('demonResponse', result);
+            } catch (error) {
+                showResponse('demonResponse', { error: error.message });
+            }
+        }
+
+        async function createDemonPost(event) {
+            event.preventDefault();
+            try {
+                const data = {
+                    title: document.getElementById('demonPostTitle').value,
+                    body: document.getElementById('demonPostBody').value,
+                    media: document.getElementById('demonPostMedia').value || undefined
+                };
+                const result = await apiCall('POST', '/demons/posts', data);
+                showResponse('demonResponse', result);
+                showAlert('Post creado', 'success');
+                event.target.reset();
+            } catch (error) {
+                showResponse('demonResponse', { error: error.message });
+            }
+        }
+
+        // Endpoints de Network Admin
+        async function createAnonymousPost(event) {
+            event.preventDefault();
+            try {
+                const data = {
+                    title: document.getElementById('anonPostTitle').value,
+                    body: document.getElementById('anonPostBody').value,
+                    media: document.getElementById('anonPostMedia').value || undefined
+                };
+                const result = await apiCall('POST', '/network-admins/posts/anonymous', data);
+                showResponse('networkadminResponse', result);
+                showAlert('Post anónimo creado', 'success');
+                event.target.reset();
+            } catch (error) {
+                showResponse('networkadminResponse', { error: error.message });
+            }
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            updateUserInfo();
+        });
+    </script>
+</body>
+</html>

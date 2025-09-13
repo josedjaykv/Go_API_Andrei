@@ -32,6 +32,7 @@ func ConnectDatabase() {
 		&models.Post{},
 		&models.Report{},
 		&models.Reward{},
+		&models.DemonVictim{},
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate database:", err)

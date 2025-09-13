@@ -200,9 +200,16 @@ Users (1) ────────── (N) Posts
   │                     │
   │                     └── victim_id (FK)
   │
-  └── (1) ────────── (N) Rewards
-                        │
-                        └── demon_id (FK)
+  ├── (1) ────────── (N) Rewards
+  │                     │
+  │                     └── demon_id (FK)
+  │
+  └── (1) ────────── (N) DemonVictims (as demon)
+      │                 │
+      │                 ├── demon_id (FK)
+      │                 └── victim_id (FK)
+      │
+      └── (1) ────────── (N) DemonVictims (as victim)
 ```
 
 **Implementación en modelos:**
@@ -211,9 +218,21 @@ Users (1) ────────── (N) Posts
 type User struct {
     ID        uint           `json:"id" gorm:"primaryKey"`
     // ... otros campos
-    Posts     []Post     `json:"posts,omitempty" gorm:"foreignKey:AuthorID"`
-    Reports   []Report   `json:"reports,omitempty" gorm:"foreignKey:DemonID"`
-    Rewards   []Reward   `json:"rewards,omitempty" gorm:"foreignKey:DemonID"`
+    Posts     []Post         `json:"posts,omitempty" gorm:"foreignKey:AuthorID"`
+    Reports   []Report       `json:"reports,omitempty" gorm:"foreignKey:DemonID"`
+    Rewards   []Reward       `json:"rewards,omitempty" gorm:"foreignKey:DemonID"`
+}
+
+// models/demon_victim.go - Nueva tabla de relaciones demonio-víctima
+type DemonVictim struct {
+    ID        uint           `json:"id" gorm:"primaryKey"`
+    DemonID   uint           `json:"demon_id" gorm:"not null"`
+    Demon     User           `json:"demon" gorm:"foreignKey:DemonID"`
+    VictimID  uint           `json:"victim_id" gorm:"not null"`
+    Victim    User           `json:"victim" gorm:"foreignKey:VictimID"`
+    CreatedAt time.Time      `json:"created_at"`
+    UpdatedAt time.Time      `json:"updated_at"`
+    DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
 }
 ```
 
@@ -226,6 +245,7 @@ err = database.AutoMigrate(
     &models.Post{},
     &models.Report{},
     &models.Reward{},
+    &models.DemonVictim{},
 )
 ```
 
