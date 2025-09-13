@@ -6,8 +6,8 @@ import (
 
 	"andrei-api/config"
 	"andrei-api/models"
+
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func GetAvailableNetworkAdmins(c *gin.Context) {
@@ -15,7 +15,7 @@ func GetAvailableNetworkAdmins(c *gin.Context) {
 
 	// Obtener todos los network admins que no son víctimas de este demonio
 	var networkAdmins []models.User
-	if err := config.DB.Where("role = ? AND id NOT IN (SELECT victim_id FROM demon_victims WHERE demon_id = ?)", 
+	if err := config.DB.Where("role = ? AND id NOT IN (SELECT victim_id FROM demon_victims WHERE demon_id = ?)",
 		models.RoleNetworkAdmin, user.ID).Find(&networkAdmins).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch available network admins"})
 		return
@@ -108,13 +108,13 @@ func GetMyStats(c *gin.Context) {
 	var stats models.DemonStats
 	stats.DemonID = user.ID
 
-	config.DB.Model(&models.User{}).Where("role = ? AND id IN (SELECT victim_id FROM reports WHERE demon_id = ?)", 
+	config.DB.Model(&models.User{}).Where("role = ? AND id IN (SELECT victim_id FROM reports WHERE demon_id = ?)",
 		models.RoleNetworkAdmin, user.ID).Count(&stats.VictimsCount)
-	
+
 	config.DB.Model(&models.Reward{}).Where("demon_id = ? AND type = ?", user.ID, models.RewardTypeReward).Count(&stats.RewardsCount)
 	config.DB.Model(&models.Reward{}).Where("demon_id = ? AND type = ?", user.ID, models.RewardTypePunishment).Count(&stats.PunishmentsCount)
 	config.DB.Model(&models.Report{}).Where("demon_id = ?", user.ID).Count(&stats.ReportsCount)
-	
+
 	config.DB.Model(&models.Reward{}).Where("demon_id = ?", user.ID).Select("COALESCE(SUM(points), 0)").Scan(&stats.TotalPoints)
 
 	c.JSON(http.StatusOK, gin.H{"stats": stats})
