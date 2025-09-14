@@ -1,4 +1,4 @@
-# Andrei Mes Manur API
+# Andrei Mes Manur API - Dockerized
 
 Backend API for the Andrei Mes Manur application - a role-based system where a failed warlock named Andrei controls demons who capture network administrators.
 
@@ -10,20 +10,65 @@ Backend API for the Andrei Mes Manur application - a role-based system where a f
 - Statistics and rankings
 - Public resistance page
 - Anonymous posting for Network Admins
+- **Full Docker support with PostgreSQL and Nginx frontend**
 
-## Setup
+## 🚀 Quick Start with Docker
+
+### Prerequisites
+- Docker
+- Docker Compose
+
+### Run the Complete System
+```bash
+# Build and run all services (backend, frontend, database)
+docker-compose up --build
+
+# Or in background mode
+docker-compose up -d --build
+```
+
+### Services Available
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8085
+- **Database**: localhost:5432
+
+### Default Users
+| Email | Password | Role |
+|-------|----------|------|
+| andrei@evil.com | password123 | andrei |
+| demon1@evil.com | password123 | demon |
+| admin1@network.com | password123 | network_admin |
+| admin2@network.com | password123 | network_admin |
+| admin3@network.com | password123 | network_admin |
+
+## 🐳 Docker Commands
+
+```bash
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+
+# Rebuild specific service
+docker-compose up --build backend
+
+# Access database
+docker-compose exec postgres psql -U postgres -d andrei_db
+```
+
+## 🛠 Manual Setup (Without Docker)
 
 ### Prerequisites
 
 - Go 1.19 or higher
 - PostgreSQL database
-- Docker (optional, for database)
 
 ### Database Setup
 
-1. Start PostgreSQL database:
 ```bash
-docker run --name postgres_local -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=mydb -p 5432:5432 -d postgres:15
+# Create PostgreSQL container
+docker run --name postgres_local -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres123 -e POSTGRES_DB=andrei_db -p 5432:5432 -d postgres:15
 ```
 
 ### Installation
@@ -34,29 +79,28 @@ docker run --name postgres_local -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=
 go mod tidy
 ```
 
-3. Copy environment variables:
+3. Set environment variables:
 ```bash
-cp .env.example .env
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_USER=postgres
+export DB_PASSWORD=postgres123
+export DB_NAME=andrei_db
+export JWT_SECRET=your-secret-key
+export PORT=8085
 ```
 
-4. Update the `.env` file with your database credentials
-
-5. Build the application:
+4. Seed the database:
 ```bash
-go build -o andrei-api main.go
+go run main.go -seed
 ```
 
-6. Seed the database with Andrei user:
+5. Run the application:
 ```bash
-go run cmd/seed/main.go
+go run main.go
 ```
 
-7. Run the application:
-```bash
-./andrei-api
-```
-
-The API will be available at `http://localhost:8080`
+The API will be available at `http://localhost:8085`
 
 ## API Endpoints
 

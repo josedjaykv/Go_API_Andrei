@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: andrei-db
+    restart: always
+    environment:
+      POSTGRES_DB: andrei_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - andrei-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Go Backend API
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: andrei-backend
+    restart: always
+    ports:
+      - "8086:8086"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+      DB_NAME: andrei_db
+      DB_SSLMODE: disable
+      JWT_SECRET: your-super-secret-jwt-key-here
+      PORT: 8086
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - andrei-network
+    volumes:
+      - ./.env:/app/.env:ro
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8086/api/v1/resistance"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend (Nginx serving static HTML)
+  frontend:
+    build:
+      context: ./frontend-simple
+      dockerfile: Dockerfile
+    container_name: andrei-frontend
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - andrei-network
+
+  # Seeder service (runs once to populate initial data)
+  seeder:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: andrei-seeder
+    restart: "no"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+      DB_NAME: andrei_db
+      DB_SSLMODE: disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - andrei-network
+    command: ["./main", "-seed"]
+    volumes:
+      - ./.env:/app/.env:ro
+
+volumes:
+  postgres_data:
+
+networks:
+  andrei-network:
+    driver: bridge
