@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -21,7 +22,18 @@ func GetAvailableNetworkAdmins(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"available_network_admins": networkAdmins})
+	// Limpiar los datos para evitar problemas con campos NULL
+	var cleanNetworkAdmins []gin.H
+	for _, admin := range networkAdmins {
+		cleanNetworkAdmins = append(cleanNetworkAdmins, gin.H{
+			"id":       admin.ID,
+			"username": admin.Username,
+			"email":    admin.Email,
+			"role":     admin.Role,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"available_network_admins": cleanNetworkAdmins})
 }
 
 func AssignVictim(c *gin.Context) {

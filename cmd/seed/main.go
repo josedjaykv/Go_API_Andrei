@@ -20,36 +20,62 @@ func main() {
 	// Connect to database
 	config.ConnectDatabase()
 
-	// Check if Andrei user exists
-	var existingUser models.User
-	err := config.DB.Where("email = ?", "andrei@evil.com").First(&existingUser).Error
-	if err == nil {
-		log.Println("✅ Andrei user already exists")
-		return
-	}
-	if err != nil && err != gorm.ErrRecordNotFound {
-		log.Fatal("❌ Error checking for Andrei user:", err)
-	}
-
 	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
 	if err != nil {
 		log.Fatal("❌ Failed to hash password:", err)
 	}
 
-	// Create Andrei user
-	andrei := models.User{
-		Username: "AndreiMesManur",
-		Email:    "andrei@evil.com",
-		Password: string(hashedPassword),
-		Role:     models.RoleAndrei,
+	// Create users if they don't exist
+	users := []models.User{
+		{
+			Username: "AndreiMesManur",
+			Email:    "andrei@evil.com",
+			Password: string(hashedPassword),
+			Role:     models.RoleAndrei,
+		},
+		{
+			Username: "demon1",
+			Email:    "demon1@evil.com",
+			Password: string(hashedPassword),
+			Role:     models.RoleDemon,
+		},
+		{
+			Username: "admin1",
+			Email:    "admin1@network.com",
+			Password: string(hashedPassword),
+			Role:     models.RoleNetworkAdmin,
+		},
+		{
+			Username: "admin2",
+			Email:    "admin2@network.com",
+			Password: string(hashedPassword),
+			Role:     models.RoleNetworkAdmin,
+		},
+		{
+			Username: "admin3",
+			Email:    "admin3@network.com",
+			Password: string(hashedPassword),
+			Role:     models.RoleNetworkAdmin,
+		},
 	}
 
-	if err := config.DB.Create(&andrei).Error; err != nil {
-		log.Fatal("❌ Failed to create Andrei user:", err)
-	}
+	for _, user := range users {
+		var existingUser models.User
+		err := config.DB.Where("email = ?", user.Email).First(&existingUser).Error
+		if err == nil {
+			log.Printf("✅ User %s already exists\n", user.Username)
+			continue
+		}
+		if err != nil && err != gorm.ErrRecordNotFound {
+			log.Fatal("❌ Error checking for user:", err)
+		}
 
-	log.Println("🎉 Andrei user created successfully!")
-	log.Println("   Email:    andrei@evil.com")
-	log.Println("   Password: password123")
+		if err := config.DB.Create(&user).Error; err != nil {
+			log.Fatal("❌ Failed to create user:", err)
+		}
+
+		log.Printf("🎉 User %s created successfully! (Email: %s, Role: %s)\n", 
+			user.Username, user.Email, user.Role)
+	}
 }
