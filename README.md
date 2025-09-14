@@ -1,6 +1,6 @@
 # Andrei Mes Manur API - Dockerized
 
-#Elaborado por Jose David Jayk Vanegas y Diego Collazos Bermudez
+# Elaborado por Jose David Jayk Vanegas y Diego Collazos Bermudez
 
 Backend API for the Andrei Mes Manur application - a role-based system where a failed warlock named Andrei controls demons who capture network administrators.
 
