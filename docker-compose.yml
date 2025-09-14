@@ -71,7 +71,7 @@ services:
   seeder:
     build: 
       context: .
-      dockerfile: Dockerfile
+      dockerfile: cmd/seed/Dockerfile
     container_name: andrei-seeder
     restart: "no"
     environment:
@@ -86,7 +86,6 @@ services:
         condition: service_healthy
     networks:
       - andrei-network
-    command: ["./main", "-seed"]
     volumes:
       - ./.env:/app/.env:ro
 

@@ -9,7 +9,8 @@
       "Bash(chmod:*)",
       "Bash(go run:*)",
       "Bash(curl:*)",
-      "Bash(docker-compose up:*)"
+      "Bash(docker-compose up:*)",
+      "Bash(docker-compose:*)"
     ],
     "deny": [],
     "ask": []
